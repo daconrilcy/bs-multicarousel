@@ -27,7 +27,7 @@ All original Bootstrap Carousel functionalities are also valid for MultiCarousel
 ## Example
 ```html
 <div id="myMultiCarousel" class="carousel slide multi-item-carousel" data-ride="multi-item-carousel">
-  <div class="carousel-inner multi-item-carousel-inner">
+  <div class="multi-item-carousel-inner">
     <div class="carousel-item active item-md-4">
       <!-- Your content here -->
     </div>
