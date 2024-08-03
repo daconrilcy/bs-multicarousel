@@ -11,7 +11,7 @@ The `MultiCarousel` class allows you to manage a Bootstrap carousel that display
 2. **JavaScript Files**
    - Add `resolutions.js` and `multicarousel.js` to the same directory.
    - Download the full and detailed version of Bootstrap's JavaScript.
-   - The configuration of `multicarousel.js` assumes that Bootstrap's source files are in a `src` subdirectory within the directory where you've copied Bootstrap's JavaScript source files.
+   - The configuration of `multicarousel.js` assumes that Bootstrap's source files are in a `src` subdirectory within the directory where you've copied `multicarousel.js`  file.
    - Modify the imports in `multicarousel.js` as needed based on your setup.
 
 ## Usage
@@ -53,4 +53,6 @@ All original Bootstrap Carousel functionalities are also valid for MultiCarousel
 ## Notes
 You can vary the number of items displayed simultaneously from 1 to 12 depending on the display classes used for the carousel items. However, ensure to use the same class for each item to avoid display issues.
 The number of items displayed can differ based on screen resolution as specified by the classes.
-Ensure to include the necessary Bootstrap CSS and JS files in your project and customize the classes as needed to fit your design requirements. By following these guidelines, you can create a responsive carousel that displays multiple items effectively.
+Ensure to include the necessary Bootstrap CSS and JS files in your project and customize the classes as needed to fit your design requirements. 
+
+By following these guidelines, you can create a responsive carousel that displays multiple items effectively.
