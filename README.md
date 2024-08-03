@@ -13,6 +13,7 @@ The `MultiCarousel` class allows you to manage a Bootstrap carousel that display
    - Download the full and detailed version of Bootstrap's JavaScript.
    - The configuration of `multicarousel.js` assumes that Bootstrap's source files are in a `src` subdirectory within the directory where you've copied `multicarousel.js`  file.
    - Modify the imports in `multicarousel.js` as needed based on your setup.
+   - `multicarousel.js` file must be loaded after  Bootstrap's source files in your html pages.
 
 ## Usage
 Construction is similar to the usual Bootstrap Carousel with a few key differences:
