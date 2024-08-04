@@ -51,7 +51,6 @@ class MultiCarousel extends Carousel {
             this._isSliding = false;
         }
         this._getItems().forEach((item, index) => {
-            item.setAttribute('data-bs-index', index);
             item.style.order = index.toString();
             if (index < this._itemsPerView) {
                 item.classList.add(CLASS_NAME_ACTIVE);
@@ -123,7 +122,7 @@ class MultiCarousel extends Carousel {
 
         const prepareTransition = () => {
             items.forEach(item => {
-                const itemIndex = parseInt(item.getAttribute('data-bs-index'), 10);
+                const itemIndex = this._getItems().indexOf(item);
                 const newOrder = (itemIndex - this._currentIndex + this._totalItems) % this._totalItems;
                 item.style.order = newOrder.toString();
                 item.classList.remove(CLASS_NAME_ITEM_TOLEFT_TRANSITION, CLASS_NAME_ITEM_TORIGHT_TRANSITION, CLASS_NAME_ITEM_TOLEFT, CLASS_NAME_ITEM_TORIGHT);
@@ -133,7 +132,7 @@ class MultiCarousel extends Carousel {
 
         const startTransition = () => {
             items.forEach(item => {
-                const itemIndex = parseInt(item.getAttribute('data-bs-index'), 10);
+                const itemIndex = this._getItems().indexOf(item);
                 const newOrder = (itemIndex - newIndex + this._totalItems) % this._totalItems;
                 item.classList.add(transitionClass);
 
@@ -148,7 +147,7 @@ class MultiCarousel extends Carousel {
         const finishTransition = () => {
             items.forEach(item => {
                 item.classList.remove(transitionClass, temporaryClass);
-                const itemIndex = parseInt(item.getAttribute('data-bs-index'), 10);
+                const itemIndex = this._getItems().indexOf(item);
                 const newOrder = (itemIndex - newIndex + this._totalItems) % this._totalItems;
                 item.style.order = newOrder.toString();
             });
