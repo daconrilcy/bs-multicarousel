@@ -9,7 +9,7 @@ The `MultiCarousel` class allows you to manage a Bootstrap carousel that display
    - Ensure to compile these SCSS files to CSS as part of your build process.
 
 2. **JavaScript Files**
-   - Add `resolutions.js` and `multicarousel.js` to the same directory.
+   - Add `resolutionsItemManager.js` and `multicarousel.js` to the same directory.
    - Download the full and detailed version of Bootstrap's JavaScript.
    - The configuration of `multicarousel.js` assumes that Bootstrap's source files are in a `src` subdirectory within the directory where you've copied `multicarousel.js`  file.
    - Modify the imports in `multicarousel.js` as needed based on your setup.
