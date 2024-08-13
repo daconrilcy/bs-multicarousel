@@ -5,7 +5,7 @@ The `MultiCarousel` class allows you to manage a Bootstrap carousel that display
 
 ## Installation
 1. **SCSS Files**
-   - Add the `_variables.scss` and `_multicarousel.scss` files to your stylesheets directory.
+   - Add the `_variables.scss`, `_images.scss` and `_multicarousel.scss` files to your stylesheets directory.
    - Ensure to compile these SCSS files to CSS as part of your build process.
 
 2. **JavaScript Files**
