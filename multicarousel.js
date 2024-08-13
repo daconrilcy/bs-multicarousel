@@ -1,10 +1,11 @@
-import Carousel from "./src/carousel.js";
-import EventHandler from "./src/dom/event-handler.js";
 import SelectorEngine from "./src/dom/selector-engine.js";
+import EventHandler from "./src/dom/event-handler.js";
 import Manipulator from "./src/dom/manipulator.js";
+import Carousel from "./src/carousel.js";
+
 import {defineJQueryPlugin, reflow} from "./src/util/index.js";
-import ResolutionManager from "./resolutions.js";
-import selectorEngine from "./src/dom/selector-engine.js";
+import ResolutionsItemManager from "./resolutionsItemManager.js";
+
 
 const NAME = 'multi-item-carousel'
 const DATA_KEY = 'bs.multi-item-carousel'
@@ -25,6 +26,8 @@ const CLASS_NAME_ITEM_TOLEFT = 'item-to-left'
 const CLASS_NAME_ITEM_TOLEFT_TRANSITION = 'transitionleft'
 const CLASS_NAME_TRANSITION_BACK = 'transitionback'
 const CLASS_NAME_TRANSITION_ACCELERATOR_PREDICATION = 'x'
+const CLASS_NAME_FIRST_ELEMENT = 'first-element'
+const CLASS_NAME_LAST_ELEMENT = 'last-element'
 
 const SELECTOR_DATA_SLIDE = '[data-bs-slide], [data-bs-slide-to]'
 const SELECTOR_DATA_RIDE = '[data-bs-ride="multi-item-carousel"]'
@@ -37,7 +40,7 @@ class MultiCarousel extends Carousel {
         if (this._config.ride === CLASS_NAME_CAROUSEL) {
             this.cycle()
         }
-        this._resolutionManager = new ResolutionManager();
+        this._resolutionManager = new ResolutionsItemManager();
 
         this._itemsPerView = 0; // Nombre d'items visibles à la fois
         this._totalItems = 0; // Nombre total d'items
@@ -50,13 +53,9 @@ class MultiCarousel extends Carousel {
     _initializeCarousel() {
         this._totalItems = this._getItems().length;
         this._notEnoughItemsForViewStop();
-        this._getItems().forEach((item, index) => {
-            item.style.order = index.toString();
-            if (index < this._itemsPerView) {
-                item.classList.add(CLASS_NAME_ACTIVE);
-            }
-        });
-        this._updateItemsOrders();
+        this._setItemsOrder();
+        this._addDefineFirstLastVisibleItems();
+        this._setActivesItems();
     }
 
     // Static
@@ -69,10 +68,21 @@ class MultiCarousel extends Carousel {
     }
 
     _setItemsOrder(orderList = []) {
+        if (orderList.length === 0) {
+            orderList = Array.from({length: this._totalItems}, (_, index) => index);
+        }
         this._itemsOrders = orderList;
         this._getItems().forEach((item, index) => {
             item.style.order = orderList[index].toString();
         });
+    }
+    _getOrderItem(element) {
+        let order = parseInt(element.style.order);
+        if (isNaN(order)) {
+            return -1;
+        }
+        return order;
+
     }
 
     _hasItemViewClassElement(element) {
@@ -93,12 +103,24 @@ class MultiCarousel extends Carousel {
         }
     }
 
+    _setActivesItems(){
+        //Order need to be defined first
+        this._getItems().forEach(item=>{
+            const itemOrder = this._getOrderItem(item)
+            if (itemOrder <= this._itemsPerView){
+                item.classList.add(CLASS_NAME_ACTIVE)
+            }else{
+                item.classList.remove(CLASS_NAME_ACTIVE)
+            }
+        });
+    }
+
     _isEnoughItemsForView() {
         return this._itemsPerView < this._totalItems;
     }
 
     _toogleSlideButtons(activated=true) {
-        const bt_slides = selectorEngine.find(SELECTOR_DATA_SLIDE, this._element);
+        const bt_slides = SelectorEngine.find(SELECTOR_DATA_SLIDE, this._element);
         for (const bt_slide of bt_slides) {
             if (activated) {
                 bt_slide.classList.remove('disabled');
@@ -115,7 +137,8 @@ class MultiCarousel extends Carousel {
     }
 
     _onResize() {
-        this._notEnoughItemsForViewStop();
+        this._initializeCarousel();
+        console.log(this._resolutionManager.getScreenResolutionPalier())
     }
 
     _notEnoughItemsForViewStop() {
@@ -275,8 +298,9 @@ class MultiCarousel extends Carousel {
         const transitionClass = isNext ? CLASS_NAME_ITEM_TOLEFT_TRANSITION : CLASS_NAME_TRANSITION_BACK;
 
         const prepareTransition = () => {
+            this._removeFirstLastClass();
             items.forEach(item => {
-                item.classList.remove(CLASS_NAME_ITEM_TOLEFT_TRANSITION, CLASS_NAME_TRANSITION_BACK, CLASS_NAME_ITEM_TOLEFT);
+                item.classList.remove(CLASS_NAME_ITEM_TOLEFT_TRANSITION, CLASS_NAME_TRANSITION_BACK, CLASS_NAME_ITEM_TOLEFT, CLASS_NAME_ACTIVE);
                 if (!isNext){
                     item.classList.add(CLASS_NAME_ITEM_TOLEFT);
                 }
@@ -290,43 +314,78 @@ class MultiCarousel extends Carousel {
         }
 
         const startTransition = () => {
-            items.forEach((item,index ) => {
-                 const newOrder = this._itemsOrders[index];
+            this._updateItemsOrders();
+            this._setActivesItems();
+            this._getItems().forEach((item ) => {
                 item.classList.add(transitionClass);
-                if (newOrder < this._itemsPerView) {
-                    item.classList.add(CLASS_NAME_ACTIVE);
-                } else {
-                    item.classList.remove(CLASS_NAME_ACTIVE);
-                }
             });
         };
 
+
         const finishTransition = () => {
+
             items.forEach(item => {
                 item.classList.remove(transitionClass, CLASS_NAME_ITEM_TOLEFT);
             });
+            if (isNext){
+                reorderItems();
+            }
+            this._setActivesItems();
+            this._addDefineFirstLastVisibleItems();
             this._currentIndex = newIndex;
             this._isSliding = false;
             triggerEvent(EVENT_SLID);
         };
 
 
-        if (isNext) {
-            prepareTransition();
-            startTransition();
-            this._queueCallback(finishTransition, items[newIndex], this._isAnimated());
-            this._queueCallback(reorderItems, items[newIndex], this._isAnimated());
-        } else {
-            reorderItems();
-            prepareTransition();
-            startTransition();
-            this._queueCallback(finishTransition, items[newIndex], this._isAnimated());
+        if (!isNext) { reorderItems();}
+        prepareTransition();
+        startTransition();
+        this._queueCallback(finishTransition, this._getItems()[newIndex], this._isAnimated());
 
-        }
     }
 
     _addResizeEvent() {
         EventHandler.on(window, 'resize', () => this._onResize());
+    }
+
+    _addDefineFirstLastVisibleItems() {
+        const indexesFistLast = this._defineFirstLastVisibleItems();
+        this._addClassFirstLast(indexesFistLast[0], indexesFistLast[1]);
+    }
+
+    _defineFirstLastVisibleItems() {
+        const maxOrder = this._itemsPerView -1;
+        let firstIndex = 0;
+        let lastIndex = 0;
+        this._getItems().forEach((item,index)=>{
+            const OrderIndex = this._getOrderItem(item);
+           if (OrderIndex === 0){
+                firstIndex = index;
+           }
+           if (OrderIndex === maxOrder){
+               lastIndex = index;
+           }
+        });
+        return [firstIndex, lastIndex];
+    }
+
+    _addClassFirstLast(firstIndex, lastIndex) {
+        const items = this._getItems();
+        if (items.length === 0) {
+            return;
+        }
+        if (firstIndex < 0 || firstIndex >= items.length || lastIndex < 0 || lastIndex >= items.length) {
+            return;
+        }
+        this._removeFirstLastClass();
+        items[firstIndex].classList.add(CLASS_NAME_FIRST_ELEMENT);
+        items[lastIndex].classList.add(CLASS_NAME_LAST_ELEMENT);
+    }
+    _removeFirstLastClass() {
+        this._getItems().forEach(item => {
+            item.classList.remove(CLASS_NAME_FIRST_ELEMENT, CLASS_NAME_LAST_ELEMENT);
+        });
     }
 }
 
